@@ -1,6 +1,6 @@
 𝐒𝐩𝐢𝐜𝐞 𝐕𝐢𝐥𝐥𝐚 – 𝐑𝐞𝐬𝐭𝐚𝐮𝐫𝐚𝐧𝐭 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 & 𝐓𝐚𝐛𝐥𝐞 𝐑𝐞𝐬𝐞𝐫𝐯𝐚𝐭𝐢𝐨𝐧 𝐒𝐲𝐬𝐭𝐞𝐦
 
-𝐏𝐫𝐨𝐣𝐞𝐜𝐭 𝐎𝐯𝐞𝐫𝐯𝐢𝐞𝐰
+𝐏𝐫𝐨𝐣𝐞𝐜𝐭 𝐎𝐯𝐞𝐫𝐯𝐢𝐞𝐰:
 Spice Villa Chatbot is a simple, interactive web application built using Flask, HTML, JavaScript, and CSS.
 It allows customers to chat with a virtual restaurant assistant to:
 1. Order food items
@@ -8,7 +8,7 @@ It allows customers to chat with a virtual restaurant assistant to:
 3. Reserve tables for specific times and group sizes
 4. This project demonstrates conversational logic, AI/NLP integration, UI design, and backend handling using a lightweight Flask setup.
 
-𝐅𝐞𝐚𝐭𝐮𝐫𝐞𝐬
+𝐅𝐞𝐚𝐭𝐮𝐫𝐞𝐬:
 1. User-friendly web-based chatbot interface
 2. AI/NLP: Pretrained DialoGPT model for intent recognition and context-aware responses
 3. Real-time order and table reservation flow
@@ -60,3 +60,4 @@ Backend with SQLite for storing orders and reservations
 Admin dashboard for monitoring in real-time
 Modular and clean Flask code structure
 Ready for local deployment
+
