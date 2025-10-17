@@ -42,14 +42,18 @@ restaurant-chatbot/
 5. Version Control: Git & GitHub
 
 𝐋𝐨𝐜𝐚𝐥 𝐒𝐞𝐭𝐮𝐩 𝐈𝐧𝐬𝐭𝐫𝐮𝐜𝐭𝐢𝐨𝐧𝐬:
-Clone the Repository
+1. Clone the Repository
 git clone https://github.com/rahulkevin28/restaurant-chatbot.git
-cd restaurant-chatbot
-Install Dependencies
+
+2. cd restaurant-chatbot
+
+3. Install Dependencies
 pip install -r requirements.txt
-Run the Flask App
+
+4.Run the Flask App
 python app.py
-Access the Application
+
+5. Access the Application
 Open your browser and go to:
 http://127.0.0.1:5000
 
@@ -60,4 +64,5 @@ Backend with SQLite for storing orders and reservations
 Admin dashboard for monitoring in real-time
 Modular and clean Flask code structure
 Ready for local deployment
+
 
