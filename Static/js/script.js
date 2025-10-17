@@ -1,9 +1,7 @@
-// ===== DOM Elements =====
 const chatBox = document.getElementById("chat-box");
 const userInputField = document.getElementById("user-input");
 const sendBtn = document.getElementById("send-btn");
 
-// ===== Utility Functions =====
 function escapeHTML(text) {
     const div = document.createElement("div");
     div.textContent = text;
@@ -18,7 +16,6 @@ function appendMessage(sender, message) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Show typing animation
 function showTypingIndicator() {
     const typingDiv = document.createElement("div");
     typingDiv.className = "bot-msg bubble typing";
@@ -28,7 +25,6 @@ function showTypingIndicator() {
     return typingDiv;
 }
 
-// ===== Input Validation =====
 function isValidInput(msg) {
     const invalidWords = ["yo", "what", "wtf", "huh", "lol"];
     const trimmed = msg.trim().toLowerCase();
@@ -36,7 +32,6 @@ function isValidInput(msg) {
     return !invalidWords.includes(trimmed);
 }
 
-// ===== Message Sending =====
 function sendMessage(msg = null) {
     const message = msg || userInputField.value.trim();
     if (!message) return;
@@ -71,13 +66,11 @@ function sendMessage(msg = null) {
     });
 }
 
-// ===== Event Listeners =====
 sendBtn.addEventListener("click", () => sendMessage());
 userInputField.addEventListener("keypress", e => {
     if (e.key === "Enter") sendMessage();
 });
 
-// ===== Menu Panel =====
 function createMenuPanel(items) {
     if (document.querySelector(".menu-panel")) return;
 
@@ -101,15 +94,12 @@ function createMenuPanel(items) {
 
     panel.appendChild(itemsContainer);
 
-    // Dashboard Button
     const dashboardBtn = document.createElement("button");
     dashboardBtn.className = "menu-item";
     dashboardBtn.style.background = "#333";
     dashboardBtn.innerText = "📊 Dashboard";
     dashboardBtn.addEventListener("click", toggleDashboard);
     panel.appendChild(dashboardBtn);
-
-    // Clear Orders & Reservations
     const clearOrdersBtn = document.createElement("button");
     clearOrdersBtn.className = "menu-item";
     clearOrdersBtn.innerText = "🗑️ Clear Orders";
@@ -126,8 +116,6 @@ function createMenuPanel(items) {
 }
 
 createMenuPanel(["pizza", "burger", "pasta", "salad", "coffee", "dessert"]);
-
-// ===== Dashboard Section =====
 let dashboardPanel = document.querySelector(".dashboard-panel");
 if (!dashboardPanel) {
     dashboardPanel = document.createElement("div");
@@ -135,7 +123,6 @@ if (!dashboardPanel) {
     dashboardPanel.style.display = "none";
     chatBox.appendChild(dashboardPanel);
 }
-
 function updateDashboard() {
     fetch("/dashboard")
         .then(res => res.json())
@@ -171,7 +158,6 @@ function toggleDashboard() {
     updateDashboard();
 }
 
-// ===== Clear Functions =====
 function clearOrders() {
     if (!confirm("Are you sure you want to clear all orders?")) return;
     fetch("/clear_orders", { method: "POST" })
@@ -188,7 +174,6 @@ function clearReservations() {
         .catch(() => appendMessage("bot", "⚠️ Error clearing reservations."));
 }
 
-// ===== Welcome Message =====
 window.onload = () => {
     appendMessage("bot", "👋 Hello! Welcome to Spice Villa.<br> You can order food, ask for recommendations, or reserve a table.<br>Try: “I’d like to order pizza” or “Book a table for 2 at 8 PM”.");
 };
