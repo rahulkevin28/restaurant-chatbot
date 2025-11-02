@@ -2,12 +2,14 @@ const chatBox = document.getElementById("chat-box");
 const userInputField = document.getElementById("user-input");
 const sendBtn = document.getElementById("send-btn");
 
+// Escape HTML to prevent XSS
 function escapeHTML(text) {
     const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
 }
 
+// Append a message bubble
 function appendMessage(sender, message) {
     const msgDiv = document.createElement("div");
     msgDiv.className = sender === "user" ? "user-msg bubble" : "bot-msg bubble";
@@ -16,6 +18,7 @@ function appendMessage(sender, message) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+// Show typing indicator
 function showTypingIndicator() {
     const typingDiv = document.createElement("div");
     typingDiv.className = "bot-msg bubble typing";
@@ -25,13 +28,14 @@ function showTypingIndicator() {
     return typingDiv;
 }
 
+// Basic input validation
 function isValidInput(msg) {
-    const invalidWords = ["yo", "what", "wtf", "huh", "lol"];
+    const invalidWords = ["yo", "wtf", "huh", "lol", "what"];
     const trimmed = msg.trim().toLowerCase();
-    if (!trimmed) return false;
-    return !invalidWords.includes(trimmed);
+    return trimmed && !invalidWords.includes(trimmed);
 }
 
+// Send message to backend
 function sendMessage(msg = null) {
     const message = msg || userInputField.value.trim();
     if (!message) return;
@@ -66,11 +70,11 @@ function sendMessage(msg = null) {
     });
 }
 
+// Event listeners
 sendBtn.addEventListener("click", () => sendMessage());
-userInputField.addEventListener("keypress", e => {
-    if (e.key === "Enter") sendMessage();
-});
+userInputField.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
 
+// Create menu panel dynamically
 function createMenuPanel(items) {
     if (document.querySelector(".menu-panel")) return;
 
@@ -83,7 +87,6 @@ function createMenuPanel(items) {
 
     const itemsContainer = document.createElement("div");
     itemsContainer.className = "menu-items";
-
     items.forEach(item => {
         const btn = document.createElement("button");
         btn.className = "menu-item";
@@ -91,31 +94,27 @@ function createMenuPanel(items) {
         btn.addEventListener("click", () => sendMessage(item));
         itemsContainer.appendChild(btn);
     });
-
     panel.appendChild(itemsContainer);
 
-    const dashboardBtn = document.createElement("button");
-    dashboardBtn.className = "menu-item";
-    dashboardBtn.style.background = "#333";
-    dashboardBtn.innerText = "📊 Dashboard";
-    dashboardBtn.addEventListener("click", toggleDashboard);
-    panel.appendChild(dashboardBtn);
-    const clearOrdersBtn = document.createElement("button");
-    clearOrdersBtn.className = "menu-item";
-    clearOrdersBtn.innerText = "🗑️ Clear Orders";
-    clearOrdersBtn.addEventListener("click", clearOrders);
-    panel.appendChild(clearOrdersBtn);
+    const actions = [
+        { text: "📊 Dashboard", handler: toggleDashboard, style: "#333" },
+        { text: "🗑️ Clear Orders", handler: clearOrders },
+        { text: "🗑️ Clear Reservations", handler: clearReservations }
+    ];
 
-    const clearReservationsBtn = document.createElement("button");
-    clearReservationsBtn.className = "menu-item";
-    clearReservationsBtn.innerText = "🗑️ Clear Reservations";
-    clearReservationsBtn.addEventListener("click", clearReservations);
-    panel.appendChild(clearReservationsBtn);
+    actions.forEach(a => {
+        const btn = document.createElement("button");
+        btn.className = "menu-item";
+        btn.innerText = a.text;
+        if (a.style) btn.style.background = a.style;
+        btn.addEventListener("click", a.handler);
+        panel.appendChild(btn);
+    });
 
     chatBox.prepend(panel);
 }
 
-createMenuPanel(["pizza", "burger", "pasta", "salad", "coffee", "dessert"]);
+// Dashboard handling
 let dashboardPanel = document.querySelector(".dashboard-panel");
 if (!dashboardPanel) {
     dashboardPanel = document.createElement("div");
@@ -123,6 +122,7 @@ if (!dashboardPanel) {
     dashboardPanel.style.display = "none";
     chatBox.appendChild(dashboardPanel);
 }
+
 function updateDashboard() {
     fetch("/dashboard")
         .then(res => res.json())
@@ -141,23 +141,16 @@ function updateDashboard() {
             chatBox.scrollTop = chatBox.scrollHeight;
         })
         .catch(() => {
-            dashboardPanel.innerHTML = `
-                <h3>📊 System Dashboard</h3>
-                <p>⚠️ Error ❌ Unable to fetch data.</p>
-            `;
+            dashboardPanel.innerHTML = `<h3>📊 System Dashboard</h3><p>⚠️ Error ❌ Unable to fetch data.</p>`;
             dashboardPanel.style.display = "block";
-            chatBox.scrollTop = chatBox.scrollHeight;
         });
 }
 
 function toggleDashboard() {
-    if (dashboardPanel.style.display === "block") {
-        dashboardPanel.style.display = "none";
-        return;
-    }
-    updateDashboard();
+    dashboardPanel.style.display = (dashboardPanel.style.display === "block") ? "none" : updateDashboard();
 }
 
+// Clear functions
 function clearOrders() {
     if (!confirm("Are you sure you want to clear all orders?")) return;
     fetch("/clear_orders", { method: "POST" })
@@ -174,6 +167,8 @@ function clearReservations() {
         .catch(() => appendMessage("bot", "⚠️ Error clearing reservations."));
 }
 
+// Initialize menu and welcome message
 window.onload = () => {
-    appendMessage("bot", "👋 Hello! Welcome to Spice Villa.<br> You can order food, ask for recommendations, or reserve a table.<br>Try: “I’d like to order pizza” or “Book a table for 2 at 8 PM”.");
+    createMenuPanel(["pizza", "burger", "pasta", "salad", "coffee", "dessert"]);
+    appendMessage("bot", "👋 Hello! Welcome to Spice Villa.<br>You can order food, ask for recommendations, or reserve a table.<br>Try: “I’d like to order pizza” or “Book a table for 2 at 8 PM”.");
 };
