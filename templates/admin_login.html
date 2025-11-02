@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login - Spice Villa</title>
+<style>
+body {
+    margin: 0; padding: 0; height: 100vh;
+    display: flex; justify-content: center; align-items: center;
+    background: #f0f2f5; font-family: "Segoe UI", sans-serif;
+}
+.login-container {
+    background: #fff; padding: 30px 40px; border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15); width: 320px;
+}
+h2 { text-align: center; color: #075e54; margin-bottom: 20px; }
+input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; }
+button {
+    width: 100%; padding: 10px; background: #25d366; border: none; color: white;
+    font-size: 16px; border-radius: 6px; cursor: pointer;
+}
+button:hover { background: #128c7e; }
+.error { color: red; text-align: center; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="login-container">
+    <h2>Admin Login</h2>
+    <form method="POST" action="{{ url_for('admin_login') }}">
+        {{ form.hidden_tag() }}
+        {{ form.username(class="input", placeholder="Username") }}
+        {{ form.password(class="input", placeholder="Password") }}
+        {{ form.submit(class="btn") }}
+    </form>
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+</div>
+</body>
+</html>
