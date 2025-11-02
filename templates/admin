@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Spice Villa</title>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body { 
+    margin:0; 
+    font-family: "Segoe UI", sans-serif; 
+    background:#f0f2f5; 
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #075e54;
+    color: white;
+    padding: 12px 20px;
+}
+.navbar h1 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; }
+.nav-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: 500; }
+.nav-links a:hover { text-decoration: underline; }
+
+/* Main Container */
+.container { 
+    max-width: 900px; 
+    margin: 40px auto; 
+    padding: 20px; 
+    background:#fff; 
+    border-radius: 12px; 
+    box-shadow:0 6px 20px rgba(0,0,0,0.1); 
+}
+
+/* Headings */
+h2 { text-align: center; color:#075e54; margin-bottom: 30px; }
+h3 { color:#128c7e; display: flex; align-items: center; gap: 8px; }
+
+/* Table Styling */
+table { width:100%; border-collapse: collapse; margin-bottom: 30px; }
+th, td { padding: 12px 10px; border-bottom: 1px solid #ddd; text-align: left; }
+th { background:#25d366; color:#fff; border-radius: 4px; }
+tr:hover { background:#f5f5f5; }
+
+/* Reservation Row Colors */
+.upcoming { background: #e7f9ef; }  /* green tint */
+.past { background: #f0f0f0; color:#777; }
+
+/* Responsive */
+@media screen and (max-width: 600px) {
+    .container { width: 95%; margin: 20px auto; padding: 15px; }
+    th, td { padding: 8px; font-size: 0.9rem; }
+    .navbar h1 { font-size: 1.1rem; }
+    .nav-links a { margin-left: 10px; font-size: 0.9rem; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+    <h1>🍽️ Spice Villa Admin</h1>
+    <div class="nav-links">
+        <a href="/admin">📊 Dashboard</a>
+        <a href="#feedback">💬 Feedback</a>
+        <a href="/logout">🚪 Logout</a>
+    </div>
+</div>
+
+<!-- Dashboard Container -->
+<div class="container">
+    <h2><i class="fa-solid fa-chart-line"></i> Admin Dashboard</h2>
+
+    <!-- Orders -->
+    <h3><i class="fa-solid fa-receipt"></i> Orders</h3>
+    <table>
+        <tr><th>Items</th><th>Type</th><th>Timestamp</th></tr>
+        {% for o in orders %}
+        <tr>
+            <td>{{ o[0] }}</td>
+            <td>{{ o[1] }}</td>
+            <td>{{ o[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- Reservations -->
+    <h3><i class="fa-solid fa-calendar-check"></i> Reservations</h3>
+    <table>
+        <tr><th>Name</th><th>Contact</th><th>Date</th><th>Time</th><th>Guests</th></tr>
+        {% for r in reservations %}
+        {% set row_class = 'upcoming' if r[2] >= '2025-10-30' else 'past' %}
+        <tr class="{{ row_class }}">
+            <td>{{ r[0] }}</td>
+            <td>{{ r[1] }}</td>
+            <td>{{ r[2] }}</td>
+            <td>{{ r[3] }}</td>
+            <td>{{ r[4] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- Feedback -->
+    <h3 id="feedback"><i class="fa-solid fa-comments"></i> Feedback</h3>
+    <table>
+        <tr><th>Message</th><th>Timestamp</th></tr>
+        {% for f in feedback %}
+        <tr>
+            <td>{{ f[0] }}</td>
+            <td>{{ f[1] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+</body>
+</html>
