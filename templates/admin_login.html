@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Login - Spice Villa</title>
+  <style>
+    :root{
+      --bg:#f0f2f5; --card:#ffffff; --accent:#25d366; --accent-dark:#128c7e;
+      --muted:#6b7280; --danger:#d9534f;
+    }
+    html,body{height:100%;margin:0;font-family: "Segoe UI", Roboto, Arial, sans-serif;background:var(--bg)}
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+    .login-container{
+      width:100%;max-width:380px;background:var(--card);padding:28px;border-radius:12px;
+      box-shadow:0 10px 30px rgba(2,6,23,0.08);
+    }
+    h2{margin:0 0 12px 0;color:#075e54;text-align:center;font-size:1.25rem}
+    p.hint{margin:0 0 18px 0;color:var(--muted);font-size:0.9rem;text-align:center}
+    label{display:block;font-size:0.85rem;color:#111827;margin-bottom:6px;font-weight:600}
+    .field{margin-bottom:12px}
+    input[type="text"], input[type="password"]{
+      width:100%;padding:10px 12px;border-radius:8px;border:1px solid #e6e6e6;font-size:0.95rem;
+      outline:none;box-sizing:border-box;
+    }
+    input[type="text"]:focus, input[type="password"]:focus{box-shadow:0 0 0 3px rgba(37,211,102,0.08);border-color:#c7f3d2}
+    .btn{
+      display:block;width:100%;padding:10px 12px;border-radius:8px;border:0;background:var(--accent);
+      color:#fff;font-weight:700;font-size:1rem;cursor:pointer;margin-top:6px;
+    }
+    .btn:hover{background:var(--accent-dark)}
+    .error { color: var(--danger); font-size:0.9rem; text-align:center; margin-top:10px; }
+    .field-error{color:var(--danger);font-size:0.85rem;margin-top:6px}
+    .small{font-size:0.85rem;color:var(--muted);text-align:center;margin-top:12px}
+    .links{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+    a.link{color:#0f172a;text-decoration:none;font-size:0.9rem}
+    @media (max-width:420px){ .login-container{padding:20px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="login-container" role="main" aria-labelledby="admin-title">
+      <h2 id="admin-title">Admin Login</h2>
+
+      <p class="hint">Sign in to view orders, reservations and feedback for Spice Villa.</p>
+
+      <form method="POST" action="{{ url_for('admin_login') }}" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="field">
+          <label for="username">Username</label>
+          {{ form.username(id="username", placeholder="Username", autofocus=True) }}
+          {% if form.username.errors %}
+            <div class="field-error">{{ form.username.errors[0] }}</div>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          {{ form.password(id="password", placeholder="Password") }}
+          {% if form.password.errors %}
+            <div class="field-error">{{ form.password.errors[0] }}</div>
+          {% endif %}
+        </div>
+
+        <div>
+          {{ form.submit(class="btn") }}
+        </div>
+      </form>
+
+      {% if error %}
+        <div class="error" role="alert">{{ error }}</div>
+      {% endif %}
+
+      <div class="small">
+        Default: <strong>admin</strong> / <strong>admin123</strong> — please change in <code>.env</code> for production.
+      </div>
+
+      <div class="links">
+        <a class="link" href="{{ url_for('home') }}">← Back to homepage</a>
+        <span class="small">Need help? Ask your lead</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

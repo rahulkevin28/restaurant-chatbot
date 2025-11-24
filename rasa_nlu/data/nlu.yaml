@@ -1,0 +1,49 @@
+version: "2.0"
+nlu:
+- intent: greet
+  examples: |
+    - hi
+    - hello
+    - hey
+    - hallo
+
+- intent: ask_menu
+  examples: |
+    - show me the menu
+    - what's on the menu
+    - zeige mir die speisekarte
+
+- intent: order_item
+  examples: |
+    - I want a pizza
+    - I'd like a burger
+    - ich möchte eine pizza
+    - ich will einen burger
+  entities:
+    - item: "pizza"
+    - item: "burger"
+
+- intent: upsell_choice
+  examples: |
+    - fries
+    - a drink
+    - coffee
+    - mit pommes
+    - mit getränk
+
+- intent: delivery_or_table
+  examples: |
+    - delivery
+    - table
+    - reservation
+    - reservierung
+
+- intent: provide_reservation
+  examples: |
+    - Rahul, +91-9999999999, 2025-12-01, 20:00, 4
+    - John, 555-0100, 2025-12-15, 19:00, 2
+
+- intent: feedback
+  examples: |
+    - feedback: the food was great
+    - feedback: service was slow

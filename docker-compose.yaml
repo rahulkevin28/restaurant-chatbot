@@ -1,0 +1,147 @@
+version: "3.8"
+
+services:
+  # Application: runs migrations then starts Gunicorn
+  app:
+    build: .
+    image: yourrepo/spice-villa:1.0.0   # replace with your image name / tag or remove if you build locally
+    env_file: ./prod.env                 # production env (do NOT commit)
+    secrets:
+      - SECRET_KEY
+      - DATABASE_PASSWORD
+      - GROQ_API_KEY
+      - ADMIN_PASS_HASH
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    # run migrations then start gunicorn (tune workers/threads for your host)
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      flask db upgrade &&
+      exec gunicorn -w 4 -k gthread -b 0.0.0.0:8000 --timeout 120 app:app
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Keep the app internal-only (do NOT expose host ports). Let nginx handle TLS/proxying.
+    # If you need temporary host-only access for debugging, replace the following block with:
+    # ports:
+    #   - "127.0.0.1:8000:8000"
+    # or to map to a different host port (avoid host:8000), use:
+    # ports:
+    #   - "5000:8000"
+    environment:
+      # These are read from ./prod.env; we map a small set here for clarity and to provide defaults.
+      - DATABASE_URL=${DATABASE_URL}
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+
+      # Redis + rate limiter/session config
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - RATELIMIT_STORAGE_URI=${RATELIMIT_STORAGE_URI:-${REDIS_URL:-redis://redis:6379/0}}
+
+      # SQLAlchemy pool tuning (tweak to your host)
+      - DB_POOL_SIZE=${DB_POOL_SIZE:-10}
+      - DB_MAX_OVERFLOW=${DB_MAX_OVERFLOW:-20}
+      - DB_POOL_TIMEOUT=${DB_POOL_TIMEOUT:-30}
+      - DB_POOL_RECYCLE=${DB_POOL_RECYCLE:-1800}
+
+      # App operational variables
+      - PORT=8000
+      - CACHE_TTL=${CACHE_TTL:-300}
+      - RATE_LIMIT=${RATE_LIMIT:-500/minute}
+
+    healthcheck:
+      # Use readiness endpoint so service is considered healthy only after DB/Redis are reachable
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ready || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  # Postgres database - no public port in production
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: restaurant_db
+      # read password from docker secret file
+      POSTGRES_PASSWORD_FILE: /run/secrets/DATABASE_PASSWORD
+    secrets:
+      - DATABASE_PASSWORD
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d restaurant_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis: sessions + rate-limit storage
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional Admin UI (Adminer). NOT exposed publicly by default.
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    networks:
+      - internal
+    environment:
+      - ADMINER_DEFAULT_DB=restaurant_db
+    # intentionally no ports: do NOT expose Adminer publicly in production
+
+  # Optional Nginx reverse-proxy (recommended) — keep app internal and let nginx handle TLS
+  nginx:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"     # redirect to https or serve Let's Encrypt challenge
+      - "443:443"   # terminate TLS here
+    depends_on:
+      - app
+    volumes:
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro   # your nginx site configs
+      - ./deploy/nginx/certs:/etc/letsencrypt/live:ro  # if you manage certs on host
+    networks:
+      - web
+      - internal
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  internal:
+    driver: bridge
+  web:
+    driver: bridge
+
+secrets:
+  # Put secret values into files under ./secrets/ (or replace with your secret manager)
+  DATABASE_PASSWORD:
+    file: ./secrets/DATABASE_PASSWORD.txt
+  SECRET_KEY:
+    file: ./secrets/SECRET_KEY.txt
+  GROQ_API_KEY:
+    file: ./secrets/GROQ_API_KEY.txt
+  ADMIN_PASS_HASH:
+    file: ./secrets/ADMIN_PASS_HASH.txt

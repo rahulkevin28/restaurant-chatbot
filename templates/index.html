@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spice Villa Chatbot 🍽️</title>
+
+<!-- embed CSRF token for JS POSTs (injected from Flask) -->
+<meta name="csrf-token" content="{{ csrf_token }}">
+
+<!-- Google font (Poppins) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<!-- Primary stylesheet (versioned) -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ config['VERSION'] }}">
+
+<style>
+  body {
+    margin: 0;
+    padding: 12px;
+    min-height: 100vh;
+    background: #f0f2f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+  .chat-container { width: 420px; max-width: calc(100vw - 24px); height: 90vh; }
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+
+    <div class="chat-header" role="banner">
+        <div style="display:flex; align-items:center;">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Spice Villa logo" width="48" height="48">
+            <div>
+                <h2 id="title-text">Spice Villa 🍽️</h2>
+                <p id="subtitle-text">Your Virtual Restaurant Assistant</p>
+            </div>
+        </div>
+
+        <button id="lang-toggle" class="lang-btn" type="button" aria-label="Toggle language">EN 🇬🇧</button>
+    </div>
+
+    <div class="menu-panel" role="region" aria-label="Menu">
+        <h3 id="menu-title">Menu 🍴</h3>
+        <div class="menu-items" role="list">
+            <button type="button" class="menu-item" data-item="pizza">Pizza 🍕</button>
+            <button type="button" class="menu-item" data-item="burger">Burger 🍔</button>
+            <button type="button" class="menu-item" data-item="pasta">Pasta 🍝</button>
+            <button type="button" class="menu-item" data-item="coffee">Coffee ☕</button>
+        </div>
+    </div>
+
+    <div class="chat-box" id="chat-box" role="log" aria-live="polite" aria-atomic="false">
+        <div class="bot-msg bubble" id="welcome-text">
+            {{ welcome_message|safe }}
+        </div>
+    </div>
+
+    <div class="chat-input" role="form" aria-label="Chat input">
+        <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" aria-label="Message input">
+        <button id="send-btn" type="button" aria-label="Send message">➤</button>
+    </div>
+
+</div>
+
+<script>
+/* Helper: read CSRF token from meta tag */
+function getCsrfToken(){
+    const m = document.querySelector('meta[name="csrf-token"]');
+    return m ? m.getAttribute('content') : '';
+}
+
+/* ---------------------------
+   LANGUAGE SYSTEM + CHAT
+   --------------------------- */
+const translations = {
+    en: {
+        title: "Spice Villa 🍽️",
+        subtitle: "Your Virtual Restaurant Assistant",
+        menu: "Menu 🍴",
+        placeholder: "Type your message...",
+        typing: "Typing..."
+    },
+    de: {
+        title: "Spice Villa 🍽️",
+        subtitle: "Ihr virtueller Restaurantassistent",
+        menu: "Menü 🍴",
+        placeholder: "Nachricht eingeben...",
+        typing: "Tippt..."
+    }
+};
+
+let currentLang = localStorage.getItem("lang") || "en";
+
+fetch("/get-lang").then(r => {
+    if (!r.ok) throw new Error("no server lang");
+    return r.json();
+}).then(j => {
+    if (j && j.lang) {
+        currentLang = j.lang;
+        localStorage.setItem("lang", currentLang);
+    }
+}).catch(()=>{}).finally(()=> applyLanguage(currentLang));
+
+function applyLanguage(lang, notifyServer=true){
+    if (!translations[lang]) lang = "en";
+
+    const titleEl = document.getElementById("title-text");
+    const subEl = document.getElementById("subtitle-text");
+    const menuEl = document.getElementById("menu-title");
+    const inputEl = document.getElementById("user-input");
+    const langBtn = document.getElementById("lang-toggle");
+
+    if (titleEl) titleEl.innerText = translations[lang].title;
+    if (subEl) subEl.innerText = translations[lang].subtitle;
+    if (menuEl) menuEl.innerText = translations[lang].menu;
+    if (inputEl) inputEl.placeholder = translations[lang].placeholder;
+    if (langBtn) langBtn.innerText = lang === "en" ? "EN 🇬🇧" : "DE 🇩🇪";
+
+    currentLang = lang;
+    localStorage.setItem("lang", lang);
+
+    if (notifyServer) {
+        // include CSRF token header
+        fetch("/set-lang", {
+            method: "POST",
+            headers: {
+                "Content-Type":"application/json",
+                "X-CSRFToken": getCsrfToken()
+            },
+            body: JSON.stringify({lang}),
+            credentials: "same-origin"
+        }).catch(()=>{});
+    }
+}
+
+document.getElementById("lang-toggle").addEventListener("click", () => {
+    const next = currentLang === "en" ? "de" : "en";
+    applyLanguage(next, true);
+});
+
+/* ---------------------------
+   CHAT LOGIC
+   --------------------------- */
+const chatBox = document.getElementById("chat-box");
+const input = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
+
+function escapeHTML(t){ const d=document.createElement("div"); d.textContent=t; return d.innerHTML; }
+
+function appendMessage(sender, message) {
+    const msgDiv = document.createElement("div");
+    msgDiv.className = sender === "user" ? "user-msg bubble" : "bot-msg bubble";
+    if (sender === "user") {
+        msgDiv.innerHTML = escapeHTML(message).replace(/\n/g, "<br>");
+    } else {
+        msgDiv.innerHTML = escapeHTML(message).replace(/\n/g, "<br>");
+    }
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function sendMessage(customMsg) {
+    const msg = customMsg || (input && input.value.trim());
+    if (!msg) return;
+
+    appendMessage("user", msg);
+    if (input) input.value = "";
+
+    const typing = document.createElement("div");
+    typing.className = "bot-msg bubble";
+    typing.innerHTML = translations[currentLang]?.typing || "Typing...";
+    chatBox.appendChild(typing);
+
+    const body = "msg=" + encodeURIComponent(msg) + "&lang=" + encodeURIComponent(currentLang);
+
+    fetch("/get", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCsrfToken()
+        },
+        body: body,
+        credentials: "same-origin"
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("server error " + res.status);
+        return res.json();
+    })
+    .then(data => {
+        if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+        appendMessage("bot", data.response || "");
+    })
+    .catch((err)=> {
+        if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+        console.error("chat fetch error:", err);
+        appendMessage("bot", "⚠️ Server error. Try again.");
+    });
+}
+
+sendBtn.onclick = () => sendMessage();
+if (input) input.onkeypress = e => { if (e.key === "Enter") sendMessage(); };
+
+document.querySelectorAll(".menu-item").forEach(btn => {
+    btn.addEventListener("click", () => sendMessage("I want " + (btn.dataset.item || btn.innerText)));
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+language: "en"
+pipeline:
+  - name: WhitespaceTokenizer
+  - name: CountVectorsFeaturizer
+  - name: DIETClassifier
+    epochs: 50
+policies: []

@@ -1,0 +1,18 @@
+version: "2.0"
+intents:
+  - greet
+  - ask_menu
+  - order_item
+  - upsell_choice
+  - delivery_or_table
+  - provide_reservation
+  - feedback
+
+entities:
+  - item
+  - date
+  - time
+  - guests
+  - contact
+
+responses: {}
