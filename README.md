@@ -1,4 +1,3 @@
-﻿# restaurant-chatbot
 𝐒𝐩𝐢𝐜𝐞 𝐕𝐢𝐥𝐥𝐚 – 𝐑𝐞𝐬𝐭𝐚𝐮𝐫𝐚𝐧𝐭 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 & 𝐓𝐚𝐛𝐥𝐞 𝐑𝐞𝐬𝐞𝐫𝐯𝐚𝐭𝐢𝐨𝐧 𝐒𝐲𝐬𝐭𝐞𝐦
 
 𝐏𝐫𝐨𝐣𝐞𝐜𝐭 𝐎𝐯𝐞𝐫𝐯𝐢𝐞𝐰:
@@ -65,6 +64,7 @@ Backend with SQLite for storing orders and reservations
 Admin dashboard for monitoring in real-time
 Modular and clean Flask code structure
 Ready for local deployment
+
 
 
 
